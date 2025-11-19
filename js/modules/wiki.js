@@ -1,5 +1,5 @@
 /* ==========================================================================
-   SISTEMA WIKI/DOCUMENTACIÓN CON ROUTING - VERSIÓN MEJORADA
+   SISTEMA WIKI/DOCUMENTACIÓN CON ARCHIVOS EXTERNOS - VERSIÓN ACTUALIZADA
    ========================================================================== */
 
 const Wiki = {
@@ -30,6 +30,11 @@ const Wiki = {
             this.handleRoute();
         });
 
+        // Manejar cambios de hash
+        window.addEventListener('hashchange', () => {
+            this.handleHashRoute();
+        });
+
         // Interceptar clicks en enlaces wiki
         document.addEventListener('click', (e) => {
             if (e.target.tagName === 'A' && e.target.getAttribute('href')?.startsWith('/wiki')) {
@@ -44,10 +49,12 @@ const Wiki = {
      * Manejar ruta inicial cuando se carga la página
      */
     handleInitialRoute() {
-        const path = window.location.pathname;
-        if (path.startsWith('/wiki')) {
-            // Estamos en una página wiki, manejar la ruta
-            this.handleRoute();
+        // Manejar hash inicial si existe
+        if (window.location.hash) {
+            this.handleHashRoute();
+        } else {
+            // Página por defecto si no hay hash
+            this.showPage('overview', false);
         }
     },
 
@@ -66,11 +73,8 @@ const Wiki = {
             page = this.mapUrlToPage(segment);
         }
         
-        if (this.pages[page]) {
-            this.showPage(page, false); // false = no actualizar URL
-        } else {
-            this.showPage('overview', false);
-        }
+        // Siempre intentar mostrar la página (los archivos existen)
+        this.showPage(page, false); // false = no actualizar URL
     },
 
     /**
@@ -168,18 +172,11 @@ const Wiki = {
     },
 
     /**
-     * Carga todas las páginas del wiki
+     * Carga todas las páginas del wiki - AHORA USA ARCHIVOS EXTERNOS
      */
     loadAllPages() {
-        this.pages = {
-            'overview': this.createOverviewPage(),
-            'getting-started': this.createGettingStartedPage(),
-            'installation': this.createInstallationPage(),
-            'troubleshooting': this.createTroubleshootingPage(),
-            'faq': this.createFaqPage(),
-            'support': this.createSupportPage() // Nueva página
-        };
-
+        // Las páginas ahora se cargan dinámicamente desde archivos
+        this.pages = {}; // Mantenemos el objeto para compatibilidad
         this.createNavigation();
     },
 
@@ -207,51 +204,82 @@ const Wiki = {
     },
 
     /**
-     * Mostrar página con routing (nueva función)
+     * Mostrar página con hash routing
      */
     showPageWithRouting(pageId) {
         const urlSegment = this.mapPageToUrl(pageId);
-        const newPath = `/wiki/${urlSegment}`;
         
-        // Actualizar URL y mostrar página
-        history.pushState(null, '', newPath);
+        // Usar hash routing en lugar de pushState
+        window.location.hash = urlSegment;
+        
         this.showPage(pageId, false);
         this.updateSEO(pageId);
     },
 
+        /**
+     * Manejar rutas con hash
+     */
+    handleHashRoute() {
+        const hash = window.location.hash.substring(1); // quitar el #
+        let page = 'overview';
+        
+        if (hash) {
+            page = this.mapUrlToPage(hash);
+        }
+        
+        this.showPage(page, false);
+    },
+
     /**
-     * Muestra una página específica del wiki (función original mejorada)
+     * Muestra una página específica del wiki - AHORA CARGA DESDE ARCHIVOS
      * @param {string} pageId - ID de la página a mostrar
      * @param {boolean} updateUrl - Si actualizar la URL (por defecto true)
      */
-    showPage(pageId, updateUrl = true) {
-        if (!this.pages[pageId]) {
-            console.error(`Página '${pageId}' no encontrada`);
-            return;
-        }
+    async showPage(pageId, updateUrl = true) {
+        try {
+            // Mostrar indicador de carga
+            const contentContainer = document.getElementById('wiki-page-content');
+            contentContainer.innerHTML = `
+                <div class="flex items-center justify-center p-8" style="background-color: #1A1A2E !important;">
+                    <div class="text-center text-white">
+                        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-trinity-purple mx-auto mb-4"></div>
+                        <p>Cargando página...</p>
+                    </div>
+                </div>
+            `;
 
-        // Actualizar contenido
-        const contentContainer = document.getElementById('wiki-page-content');
-        contentContainer.innerHTML = this.pages[pageId];
-        
-        // FORZAR FONDO OSCURO DESPUÉS DE CARGAR CONTENIDO
-        contentContainer.style.backgroundColor = '#1A1A2E';
-        contentContainer.style.color = 'white';
+            // Cargar contenido desde archivo
+            const content = await WikiLoader.loadPage(pageId);
+            
+            // Actualizar contenido
+            contentContainer.innerHTML = content;
+            
+            // FORZAR FONDO OSCURO DESPUÉS DE CARGAR CONTENIDO
+            contentContainer.style.backgroundColor = '#1A1A2E';
+            contentContainer.style.color = 'white';
 
-        // Actualizar navegación activa
-        this.updateActiveNavigation(pageId);
+            // Actualizar navegación activa
+            this.updateActiveNavigation(pageId);
 
-        // Cerrar menú móvil si está abierto
-        this.closeMobileMenu();
+            // Cerrar menú móvil si está abierto
+            this.closeMobileMenu();
 
-        // Scroll al inicio del contenido
-        contentContainer.scrollTop = 0;
+            // Scroll al inicio del contenido
+            contentContainer.scrollTop = 0;
 
-        this.currentPage = pageId;
+            this.currentPage = pageId;
 
-        // Actualizar SEO
-        if (updateUrl) {
-            this.updateSEO(pageId);
+            // Actualizar SEO
+            if (updateUrl) {
+                this.updateSEO(pageId);
+            }
+
+        } catch (error) {
+            console.error(`Error mostrando página '${pageId}':`, error);
+            const contentContainer = document.getElementById('wiki-page-content');
+            contentContainer.innerHTML = WikiLoader.createErrorPage(pageId);
+            contentContainer.style.backgroundColor = '#1A1A2E';
+            contentContainer.style.color = 'white';
         }
     },
 
@@ -307,7 +335,7 @@ const Wiki = {
         if (ogDescription) ogDescription.setAttribute('content', data.description);
         if (ogUrl) {
             const urlSegment = this.mapPageToUrl(pageId);
-            const newUrl = `https://trinity-launcher.vercel.app/wiki/${urlSegment}`;
+            const newUrl = `https://trinity-launcher.vercel.app/wiki#${urlSegment}`;
             ogUrl.setAttribute('content', newUrl);
         }
 
@@ -315,7 +343,7 @@ const Wiki = {
         const canonical = document.querySelector('link[rel="canonical"]');
         if (canonical) {
             const urlSegment = this.mapPageToUrl(pageId);
-            const newUrl = `https://trinity-launcher.vercel.app/wiki/${urlSegment}`;
+            const newUrl = `https://trinity-launcher.vercel.app/wiki#${urlSegment}`;
             canonical.setAttribute('href', newUrl);
         }
     },
@@ -385,217 +413,88 @@ const Wiki = {
         if (wikiSidebar) wikiSidebar.classList.add('-translate-x-full');
         if (mobileWikiOverlay) mobileWikiOverlay.classList.add('hidden');
         document.body.style.overflow = '';
+    }
+};
+
+/* ==========================================================================
+   CARGADOR DE PÁGINAS WIKI - ARCHIVOS EXTERNOS
+   ========================================================================== */
+
+const WikiLoader = {
+    cache: new Map(),
+    
+    /**
+     * Carga una página wiki desde archivo externo
+     */
+    async loadPage(pageId) {
+        try {
+            // Usar caché si existe
+            if (this.cache.has(pageId)) {
+                return this.cache.get(pageId);
+            }
+
+            // Mapear IDs a archivos
+            const pageFiles = {
+                'overview': 'wiki/pages/resumen.html',
+                'getting-started': 'wiki/pages/primeros-pasos.html',
+                'installation': 'wiki/pages/instalacion.html',
+                'troubleshooting': 'wiki/pages/solucion-problemas.html',
+                'faq': 'wiki/pages/faq.html',
+                'support': 'wiki/pages/soporte.html'
+            };
+
+            const filePath = pageFiles[pageId];
+            if (!filePath) {
+                throw new Error(`Página '${pageId}' no encontrada`);
+            }
+
+            // Cargar archivo
+            const response = await fetch(filePath);
+            if (!response.ok) {
+                throw new Error(`Error loading page: ${response.status}`);
+            }
+
+            const html = await response.text();
+            
+            // Extraer contenido del body
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const content = doc.body.innerHTML;
+
+            // Guardar en caché
+            this.cache.set(pageId, content);
+            
+            return content;
+            
+        } catch (error) {
+            console.error(`Error cargando página ${pageId}:`, error);
+            return this.createErrorPage(pageId);
+        }
     },
 
-    // ===== PÁGINAS DEL WIKI - TODAS CON ESTILOS OSCUROS =====
-
-    createOverviewPage() {
+    /**
+     * Crear página de error
+     */
+    createErrorPage(pageId) {
         return `
             <div class="wiki-page" style="background-color: #1A1A2E !important; color: white !important;">
-                <h1 style="color: white !important;">Resumen</h1>
-                <p class="text-lg mb-6" style="color: #d1d5db !important;">
-                    Trinity Launcher es un launcher open source de Minecraft Bedrock diseñado específicamente para sistemas Linux,
-                    con soporte completo para las principales distribuciones que soportan Flatpak.
-                </p>
-                <div class="info-box" style="background-color: rgba(59, 130, 246, 0.1) !important; border-left: 4px solid #3b82f6; color: #93c5fd !important;">
-                    <div class="flex">
-                        <div class="flex-shrink-0">
-                            <svg class="h-5 w-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
-                            </svg>
-                        </div>
-                        <div class="ml-3">
-                            <p style="color: #93c5fd !important;">
-                                <strong>Nota:</strong> Trinity Launcher está en desarrollo activo. Algunas características pueden cambiar en futuras versiones.
-                            </p>
-                        </div>
-                    </div>
+                <h1 style="color: white !important;">Error al cargar la página</h1>
+                <div class="bg-red-900 border border-red-700 text-red-300 px-4 py-3 rounded mb-6">
+                    <p>No se pudo cargar la página solicitada: <strong>${pageId}</strong></p>
+                    <p class="mt-2">Por favor, inténtalo de nuevo más tarde.</p>
                 </div>
-                <h2 style="color: white !important;">Características Principales</h2>
-                <ul class="space-y-2 mb-6" style="color: #d1d5db !important;">
-                    <li>✅ Soporte nativo para Linux</li>
-                    <li>✅ Compatible con Debian, Ubuntu, Arch y Fedora Y cualquier Distro Soportada por Flatpak</li>
-                    <li>✅ Gestión de múltiples instancias</li>
-                    <li>✅ Instalación automática de modpacks</li>
-                    <li>✅ Interfaz moderna e intuitiva</li>
-                    <li>✅ Completamente open source</li>
-                </ul>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
-                    <div class="bg-trinity-dark rounded-lg p-6 border border-gray-600 hover:border-trinity-purple transition-colors cursor-pointer" onclick="Wiki.showPageWithRouting('installation')">
-                        <h3 class="text-xl font-semibold mb-3 text-white">🚀 Comenzar</h3>
-                        <p class="text-gray-300 mb-4">Instala Trinity Launcher en tu sistema</p>
-                        <span class="text-trinity-purple hover:underline">Ver Instalación →</span>
-                    </div>
-                    
-                    <div class="bg-trinity-dark rounded-lg p-6 border border-gray-600 hover:border-trinity-purple transition-colors cursor-pointer" onclick="Wiki.showPageWithRouting('support')">
-                        <h3 class="text-xl font-semibold mb-3 text-white">🛠️ ¿Necesitas Ayuda?</h3>
-                        <p class="text-gray-300 mb-4">Contacta con nuestro equipo</p>
-                        <span class="text-trinity-purple hover:underline">Ver Soporte →</span>
-                    </div>
-                </div>
-            </div>
-        `;
-    },
-
-    createGettingStartedPage() {
-        return `
-            <div class="wiki-page" style="background-color: #1A1A2E !important; color: white !important;">
-                <h1 style="color: white !important;">Primeros Pasos</h1>
-                <p class="mb-6" style="color: #d1d5db !important;">Esta guía te ayudará a configurar Trinity Launcher en tu sistema Linux.</p>
-
-                <h2 style="color: white !important;">Requisitos del Sistema</h2>
-                <ul class="space-y-2 mb-6" style="color: #d1d5db !important;">
-                    <li><strong>OS:</strong> Linux (Debian, Ubuntu, Arch, Fedora o derivadas)</li>
-                    <li><strong>RAM:</strong> Mínimo 4GB (8GB recomendados)</li>
-                    <li><strong>Espacio:</strong> Al menos 2GB libres</li>
-                </ul>
-
-                <h2 style="color: white !important;">Primer Lanzamiento</h2>
-                <ol class="list-decimal list-inside space-y-2" style="color: #d1d5db !important;">
-                    <li>Abre Trinity Launcher desde el menú de aplicaciones</li>
-                    <li>Configura tu Aplicacion de Minecraft Bedrock</li>
-                    <li>Selecciona la versión de Minecraft Bedrock que deseas</li>
-                    <li>¡Disfruta jugando!</li>
-                </ol>
-            </div>
-        `;
-    },
-
-    createInstallationPage() {
-        return `
-            <div class="wiki-page" style="background-color: #1A1A2E !important; color: white !important;">
-                <h1 style="color: white !important;">Instalación</h1>
-                
-                <div class="coming-soon-container" style="background: linear-gradient(135deg, rgba(139, 127, 214, 0.1) 0%, rgba(139, 127, 214, 0.05) 100%) !important; border: 2px dashed #8B7FD6; border-radius: 12px; padding: 3rem; text-align: center; color: white !important;">
-                    <div class="text-7xl mb-6">📦</div>
-                    <h2 class="text-4xl font-bold mb-4" style="color: #8B7FD6 !important;">¡PRÓXIMAMENTE!</h2>
-                    <p class="text-xl" style="color: #9ca3af !important;">
-                        Pronto podrás descargar Trinity Launcher para todas las distribuciones.
-                    </p>
-                </div>
-            </div>
-        `;
-    },
-
-    createTroubleshootingPage() {
-        return `
-            <div class="wiki-page" style="background-color: #1A1A2E !important; color: white !important;">
-                <h1 style="color: white !important;">Solución de Problemas</h1>
-                
-                <div class="coming-soon-container" style="background: linear-gradient(135deg, rgba(139, 127, 214, 0.1) 0%, rgba(139, 127, 214, 0.05) 100%) !important; border: 2px dashed #8B7FD6; border-radius: 12px; padding: 3rem; text-align: center; color: white !important;">
-                    <div class="text-7xl mb-6">🔧</div>
-                    <h2 class="text-4xl font-bold mb-4" style="color: #8B7FD6 !important;">¡PRÓXIMAMENTE!</h2>
-                    <p class="text-xl" style="color: #9ca3af !important;">
-                        Estamos preparando guías detalladas de solución de problemas.
-                    </p>
-                </div>
-            </div>
-        `;
-    },
-
-    createFaqPage() {
-        return `
-            <div class="wiki-page" style="background-color: #1A1A2E !important; color: white !important;">
-                <h1 style="color: white !important;">Preguntas Frecuentes (FAQ)</h1>
-
-                <div class="space-y-8">
-                    <div>
-                        <h3 style="color: #8B7FD6 !important;">¿Trinity Launcher es compatible con Minecraft Java Edition?</h3>
-                        <p style="color: #d1d5db !important;">
-                            No, Trinity Launcher está diseñado específicamente para Minecraft Bedrock Edition.
-                            Para Java Edition recomendamos usar PrismLauncher o MultiMC.
-                        </p>
-                    </div>
-
-                    <div>
-                        <h3 style="color: #8B7FD6 !important;">¿Necesito una licencia de Minecraft?</h3>
-                        <p style="color: #d1d5db !important;">
-                            Sí, Trinity Launcher "requiere" que tengas una cuenta válida de Microsoft con Minecraft Bedrock Edition.
-                            El launcher no incluye el juego, solo proporciona una forma mejor de ejecutarlo en Linux.
-                        </p>
-                    </div>
-
-                    <div>
-                        <h3 style="color: #8B7FD6 !important;">¿Es Trinity Launcher open source?</h3>
-                        <p style="color: #d1d5db !important;">
-                            Sí, Trinity Launcher es completamente open source bajo licencia GPL v3.
-                            Puedes encontrar el código fuente en <a href="https://github.com/" target="_blank" rel="noopener noreferrer" style="color: #8B7FD6 !important; text-decoration: underline;">Github</a>.
-                        </p>
-                    </div>
-
-                    <div>
-                        <h3 style="color: #8B7FD6 !important;">¿Soporta mods?</h3>
-                        <p style="color: #d1d5db !important;">
-                            Trinity Launcher soporta add-ons y behavior packs de Minecraft Bedrock,
-                            así como la instalación automática de modpacks compatibles desde repositorios populares.
-                        </p>
-                    </div>
-
-                    <div>
-                        <h3 style="color: #8B7FD6 !important;">¿Cómo reportar bugs?</h3>
-                        <p style="color: #d1d5db !important;">
-                            Puedes reportar bugs y solicitar características en nuestro
-                            <a href="https://github.com/" target="_blank" rel="noopener noreferrer" style="color: #8B7FD6 !important; text-decoration: underline;">repositorio de Github</a>
-                            o unirte a nuestra comunidad en Discord.
-                        </p>
-                    </div>
-                </div>
+                <button onclick="Wiki.showPageWithRouting('overview')" class="bg-trinity-purple text-white px-4 py-2 rounded hover:bg-purple-700 transition-colors">
+                    Volver al inicio
+                </button>
             </div>
         `;
     },
 
     /**
-     * Nueva página de soporte
+     * Limpiar caché
      */
-    createSupportPage() {
-        return `
-            <div class="wiki-page" style="background-color: #1A1A2E !important; color: white !important;">
-                <h1 style="color: white !important;">Soporte Técnico</h1>
-                <p class="text-xl mb-8" style="color: #d1d5db !important;">
-                    ¿Necesitas ayuda con Trinity Launcher? Estamos aquí para ayudarte.
-                </p>
-                
-                <h2 style="color: white !important;">🚀 Canales de Soporte</h2>
-                
-                <div class="space-y-6 mb-8">
-                    <div class="bg-trinity-dark rounded-lg p-6 border border-gray-600">
-                        <h3 class="text-xl font-semibold mb-3 text-white flex items-center">
-                            <span class="text-2xl mr-3">💬</span> Discord (Recomendado)
-                        </h3>
-                        <p class="text-gray-300 mb-4">
-                            Únete a nuestra comunidad en Discord para obtener ayuda rápida de otros usuarios y del equipo de desarrollo.
-                        </p>
-                        <a href="https://discord.gg/uTFUJf6DGP" target="_blank" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg transition-colors inline-flex items-center">
-                            <span class="mr-2">🎮</span> Unirse al Discord
-                        </a>
-                    </div>
-                    
-                    <div class="bg-trinity-dark rounded-lg p-6 border border-gray-600">
-                        <h3 class="text-xl font-semibold mb-3 text-white flex items-center">
-                            <span class="text-2xl mr-3">🐛</span> GitHub Issues
-                        </h3>
-                        <p class="text-gray-300 mb-4">
-                            Para reportar bugs, solicitar nuevas características o problemas técnicos específicos.
-                        </p>
-                        <a href="https://github.com/" target="_blank" class="bg-gray-700 hover:bg-gray-600 text-white px-6 py-3 rounded-lg transition-colors inline-flex items-center">
-                            <span class="mr-2">📝</span> Reportar Issue
-                        </a>
-                    </div>
-                </div>
-                
-                <h2 style="color: white !important;">📋 Antes de Contactar</h2>
-                <div class="bg-trinity-dark rounded-lg p-6 border border-gray-600 mb-6">
-                    <p class="text-gray-300 mb-4">Para ayudarte mejor, ten lista la siguiente información:</p>
-                    <ul class="space-y-2 text-gray-300">
-                        <li>• Distribución Linux y versión</li>
-                        <li>• Versión de Trinity Launcher</li>
-                        <li>• Descripción detallada del problema</li>
-                        <li>• Capturas de pantalla si es posible</li>
-                    </ul>
-                </div>
-            </div>
-        `;
+    clearCache() {
+        this.cache.clear();
     }
 };
 
