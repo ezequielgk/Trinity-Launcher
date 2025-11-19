@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth" prefix="og: http://ogp.me/ns#">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Título principal optimizado para SEO -->
+    <title>Trinity Launcher - Minecraft Bedrock para Linux | Launcher Open Source</title>
+    
+    <!-- Meta descripción (aparece en resultados de búsqueda) -->
+    <meta name="description" content="Trinity Launcher es un launcher open source para Minecraft Bedrock en Linux. Gestiona múltiples instancias, mundos, texturas y mods con total libertad. Descarga gratis.">
+    
+    <!-- Palabras clave relevantes -->
+    <meta name="keywords" content="trinity launcher, minecraft bedrock linux, launcher minecraft, minecraft linux, bedrock edition linux, launcher open source, minecraft mods, minecraft instancias, minecraft launcher">
+    
+    <!-- Meta información del sitio -->
+    <meta name="author" content="Trinity Launcher Team">
+    <meta name="robots" content="index, follow">
+    <meta name="language" content="Spanish">
+    <meta name="revisit-after" content="7 days">
+    <meta name="theme-color" content="#8B5CF6">
+    
+    <!-- Open Graph para redes sociales (Facebook, LinkedIn) -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Trinity Launcher - Minecraft Bedrock para Linux">
+    <meta property="og:description" content="Launcher open source para Minecraft Bedrock en Linux. Gestiona múltiples instancias, mundos, texturas y mods con total libertad.">
+    <meta property="og:url" content="https://trinity-launcher.vercel.app">
+    <meta property="og:site_name" content="Trinity Launcher">
+    <meta property="og:image" content="https://trinity-launcher.vercel.app/assets/images/trinity-social.jpg">
+    <meta property="og:image:alt" content="Trinity Launcher - Interface del launcher para Minecraft Bedrock">
+    <meta property="og:locale" content="es_ES">
+    
+    <!-- Twitter Cards -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Trinity Launcher - Minecraft Bedrock para Linux">
+    <meta name="twitter:description" content="Launcher open source para Minecraft Bedrock en Linux. Gestiona instancias, mundos y mods fácilmente.">
+    <meta name="twitter:image" content="https://trinity-launcher.vercel.app/assets/images/trinity-social.jpg">
+    <meta name="twitter:site" content="@trinitylauncher">
+    
+    <!-- Canonical URL (evita contenido duplicado) -->
+    <link rel="canonical" href="https://trinity-launcher.vercel.app">
+    
+    <!-- Favicon y iconos de la aplicación -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/images/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/assets/images/favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/images/apple-touch-icon.png">
+    <link rel="manifest" href="/site.webmanifest">
+    
+    <!-- Datos estructurados JSON-LD (muy importante para SEO) -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "Trinity Launcher",
+        "description": "Launcher open source para Minecraft Bedrock en Linux que permite gestionar múltiples instancias, mundos, texturas y mods",
+        "applicationCategory": "GameApplication",
+        "operatingSystem": "Linux",
+        "url": "https://trinity-launcher.vercel.app",
+        "softwareVersion": "1.0",
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+        },
+        "publisher": {
+            "@type": "Organization",
+            "name": "Trinity Launcher Team"
+        },
+        "screenshot": "https://trinity-launcher.vercel.app/assets/images/mc1.png",
+        "featureList": [
+            "Gestión de múltiples instancias de Minecraft",
+            "Instalación automática de mods",
+            "Gestión de mundos personalizados",
+            "Integración con CurseForge",
+            "Interface moderna y limpia",
+            "Compatible con múltiples distribuciones Linux"
+        ],
+        "requirements": "Linux (Debian, Ubuntu, Arch, Fedora y derivadas)"
+    }
+    </script>
+    
+    <!-- TailwindCSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="js/config/tailwind.config.js"></script>
+    
+    <!-- Estilos principales -->
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/components/navigation.css">
+    <link rel="stylesheet" href="css/components/hero.css">
+    <link rel="stylesheet" href="css/components/wiki.css">
+</head>
+<body class="bg-trinity-darker text-white">
+    <!-- Navigation -->
+    <nav class="bg-trinity-dark shadow-sm border-b border-gray-700" role="navigation" aria-label="Navegación principal">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <span class="text-2xl font-bold text-trinity-purple">Trinity Launcher</span>
+                </div>
+
+                <div class="hidden md:flex items-center space-x-8">
+                    <button onclick="Navigation.showHome()" class="hover:text-trinity-purple transition-colors font-medium text-white" aria-label="Ir a inicio">Inicio</button>
+                    <button onclick="Navigation.showWiki()" class="hover:text-trinity-purple transition-colors font-medium text-white" aria-label="Ver documentación">Documentación</button>
+                    <a href="https://github.com/" target="_blank" rel="noopener noreferrer" class="text-gray-300 hover:text-trinity-purple transition-colors font-medium" aria-label="Ver código en Github">Github</a>
+                </div>
+
+                <button class="md:hidden text-white" id="mobile-menu-btn" aria-label="Abrir menú móvil">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Menu -->
+        <div class="md:hidden hidden" id="mobile-nav-menu">
+            <div class="px-2 pt-2 pb-3 space-y-1 bg-trinity-dark border-t border-gray-700">
+                <button onclick="Navigation.showHome(); Navigation.closeMobileNavMenu();" class="block w-full text-left px-3 py-4 text-base hover:text-trinity-purple hover:bg-gray-700 transition-colors rounded-lg text-white">
+                    Inicio
+                </button>
+                <button onclick="Navigation.showWiki(); Navigation.closeMobileNavMenu();" class="block w-full text-left px-3 py-4 text-base hover:text-trinity-purple hover:bg-gray-700 transition-colors rounded-lg text-white">
+                    Documentación
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Home Section -->
+    <main id="home-content">
+        <!-- Hero Section -->
+        <section class="gradient-bg text-white py-20">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center max-w-4xl mx-auto">
+                    <div class="mx-auto mb-8 floating w-20 h-20 flex items-center justify-center">
+                        <img src="https://cdn.jsdelivr.net/gh/rox737280-glitch/svg@main/trini%20vector.svg" alt="Trinity Launcher Logo" class="w-full h-full object-contain" width="80" height="80">
+                    </div>
+                    <h1 class="text-5xl md:text-6xl font-bold mb-6">Trinity Launcher</h1>
+                    <p class="text-xl md:text-2xl mb-8 text-gray-200">
+                        Un launcher open source para Minecraft Bedrock con la capacidad de
+                        gestionar múltiples instancias, mundos, texturas y mods. Enfocado en
+                        la libertad del usuario y redistribución gratuita.
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-6 justify-center">
+                        <button onclick="Navigation.showWiki(); Wiki.showPage('installation');" class="group hero-btn-primary text-trinity-purple px-10 py-5 rounded-2xl text-lg font-bold transform hover:scale-105 transition-all duration-300 overflow-hidden" aria-label="Descargar Trinity Launcher">
+                            <span class="relative z-10 flex items-center justify-center gap-3">
+                                <svg class="w-6 h-6 transform group-hover:rotate-12 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>
+                                </svg>
+                                Descargar Ahora
+                            </span>
+                        </button>
+                        <button onclick="Navigation.showWiki()" class="group hero-btn-secondary text-white hover:text-white px-10 py-5 rounded-2xl text-lg font-bold transform hover:scale-105 transition-all duration-300" aria-label="Ver documentación de Trinity Launcher">
+                            <span class="flex items-center justify-center gap-3">
+                                <svg class="w-6 h-6 transform group-hover:rotate-12 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                                Ver Documentación
+                            </span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Screenshots Section -->
+        <section class="py-20 bg-trinity-dark">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-20">
+                    <div>
+                        <img src="assets/images/mc1.png" alt="Interface de Trinity Launcher mostrando gestión de instancias" class="screenshot w-full" loading="lazy">
+                    </div>
+                    <div>
+                        <h2 class="text-3xl font-bold mb-6 text-white">Gestión de Instancias</h2>
+                        <p class="text-lg text-gray-300 mb-6">
+                            Instala y lanza instancias fácilmente, manteniéndolos limpios.
+                            Ya no necesitas instalar y actualizar instancias manualmente—Trinity
+                            Launcher puede realizar estas tareas por ti sin complicaciones.
+                        </p>
+                        <ul class="space-y-2 text-gray-300">
+                            <li class="flex items-center">
+                                <svg class="w-5 h-5 text-green-500 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                </svg>
+                                Gestión automática de modpacks
+                            </li>
+                            <li class="flex items-center">
+                                <svg class="w-5 h-5 text-green-500 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                </svg>
+                                Múltiples instancias de Minecraft
+                            </li>
+                            <li class="flex items-center">
+                                <svg class="w-5 h-5 text-green-500 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                </svg>
+                                Interface limpia y moderna
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                    <div class="order-2 lg:order-1">
+                        <h2 class="text-3xl font-bold mb-6 text-white">Descarga y Actualiza Mods</h2>
+                        <p class="text-lg text-gray-300 mb-6">
+                            ¿Estás cansado de buscar constantemente y volver a añadir ese mod que necesitas?
+                            Trinity Launcher almacena directamente los Mods, Mundos o texturas que tengas!
+                        </p>
+                        <ul class="space-y-2 text-gray-300">
+                            <li class="flex items-center">
+                                <svg class="w-5 h-5 text-green-500 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                </svg>
+                                Integración con mods de CurseForge
+                            </li>
+                            <li class="flex items-center">
+                                <svg class="w-5 h-5 text-green-500 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                </svg>
+                                Instalaciones de Mundos Personalizados
+                            </li>
+                            <li class="flex items-center">
+                                <svg class="w-5 h-5 text-green-500 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                </svg>
+                                Gestión simplificada de dependencias
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="order-1 lg:order-2">
+                        <img src="assets/images/mc2.png" alt="Gestión de mods en Trinity Launcher" class="screenshot w-full" loading="lazy">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Supported Distros -->
+        <section class="py-20 bg-trinity-darker">
+            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                <h2 class="text-3xl font-bold mb-8 text-white">Distribuciones Soportadas</h2>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                    <div class="bg-trinity-dark rounded-lg p-6 shadow-lg border border-gray-600 hover:border-trinity-purple transition-colors">
+                        <div class="text-4xl mb-3" aria-hidden="true">🌊</div>
+                        <h3 class="font-semibold text-white">Debian</h3>
+                        <p class="text-sm text-gray-400">y derivadas</p>
+                    </div>
+                    <div class="bg-trinity-dark rounded-lg p-6 shadow-lg border border-gray-600 hover:border-trinity-purple transition-colors">
+                        <div class="text-4xl mb-3" aria-hidden="true">🟠</div>
+                        <h3 class="font-semibold text-white">Ubuntu</h3>
+                        <p class="text-sm text-gray-400">y derivadas</p>
+                    </div>
+                    <div class="bg-trinity-dark rounded-lg p-6 shadow-lg border border-gray-600 hover:border-trinity-purple transition-colors">
+                        <div class="text-4xl mb-3" aria-hidden="true">🏔️</div>
+                        <h3 class="font-semibold text-white">Arch</h3>
+                        <p class="text-sm text-gray-400">y derivadas</p>
+                    </div>
+                    <div class="bg-trinity-dark rounded-lg p-6 shadow-lg border border-gray-600 hover:border-trinity-purple transition-colors">
+                        <div class="text-4xl mb-3" aria-hidden="true">🎩</div>
+                        <h3 class="font-semibold text-white">Fedora</h3>
+                        <p class="text-sm text-gray-400">y derivadas</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Wiki Section -->
+    <div id="wiki-content" class="hidden bg-trinity-darker">
+        <!-- Wiki content will be loaded here by JavaScript -->
+        <div id="wiki-container"></div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-trinity-dark text-white py-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <div class="flex items-center justify-center space-x-3 mb-4">
+                <span class="text-lg font-bold">Trinity Launcher</span>
+            </div>
+            <p class="text-gray-400 mb-4">El launcher definitivo para Minecraft Bedrock en Linux</p>
+            <div class="flex justify-center space-x-6">
+                <a href="https://github.com/" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-white" aria-label="Ver código en Github">Github</a>
+                <a href="https://discord.gg/uTFUJf6DGP" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-white" aria-label="Unirse a Discord">Discord</a>
+            </div>
+            <p class="text-gray-500 text-sm mt-4">© 2025 Trinity Launcher. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="js/modules/theme.js"></script>
+    <script src="js/modules/navigation.js"></script>
+    <script src="js/modules/wiki.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

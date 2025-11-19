@@ -1,0 +1,12 @@
+{
+  "rewrites": [
+    {
+      "source": "/wiki/(.*)",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/wiki",
+      "destination": "/index.html"
+    }
+  ]
+}

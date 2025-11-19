@@ -1,0 +1,120 @@
+/* ==========================================================================
+   TRINITY LAUNCHER - ESTILOS PRINCIPALES
+   ========================================================================== */
+
+/* Variables CSS personalizadas */
+:root {
+    --trinity-purple: #8B7FD6;
+    --trinity-dark: #2A2A3A;
+    --trinity-darker: #1A1A2E;
+    --trinity-light: #E8E6FF;
+    --accent-orange: #FF8C42;
+    --sidebar-bg: #2D2D3A;
+    --sidebar-active: #3A3A4A;
+}
+
+/* Dark mode detection */
+@media (prefers-color-scheme: dark) {
+    html { 
+        color-scheme: dark; 
+    }
+}
+
+/* ==========================================================================
+   UTILIDADES GLOBALES
+   ========================================================================== */
+
+.gradient-bg {
+    background: linear-gradient(135deg, var(--trinity-purple) 0%, var(--trinity-dark) 100%);
+}
+
+/* ==========================================================================
+   ANIMACIONES
+   ========================================================================== */
+
+.floating {
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+}
+
+.coming-soon-badge {
+    animation: pulse-glow 2s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.8;
+        transform: scale(1.05);
+    }
+}
+
+/* ==========================================================================
+   COMPONENTES DE UI
+   ========================================================================== */
+
+.screenshot {
+    box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+    border-radius: 8px;
+}
+
+/* ==========================================================================
+   CÓDIGO Y TEXTO PREFORMATEADO
+   ========================================================================== */
+
+pre {
+    background: #1e1e2e;
+    color: #cdd6f4;
+    padding: 1rem;
+    border-radius: 8px;
+    overflow-x: auto;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+
+code {
+    background: #1e1e2e;
+    color: #f38ba8;
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9em;
+    word-break: break-word;
+}
+
+/* ==========================================================================
+   RESPONSIVE DESIGN
+   ========================================================================== */
+
+/* Imágenes responsivas */
+.wiki-page img {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Mobile optimizations */
+@media (max-width: 640px) {
+    pre {
+        padding: 0.75rem;
+        font-size: 0.8rem;
+        line-height: 1.4;
+    }
+}
+
+/* Mejores touch targets para móviles */
+@media (max-width: 1024px) {
+    .wiki-nav-item {
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+    }
+}
