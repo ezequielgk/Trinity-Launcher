@@ -193,7 +193,11 @@ if (document.readyState === 'loading') {
     window.TrinityApp.init();
 }
 
+
+
+
 // Exportar para uso global (compatibilidad)
 window.Navigation = Navigation;
 window.Wiki = Wiki;
 window.Theme = Theme;
+

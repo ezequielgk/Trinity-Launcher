@@ -49,13 +49,19 @@ const Wiki = {
      * Manejar ruta inicial cuando se carga la página
      */
     handleInitialRoute() {
-        // Manejar hash inicial si existe
-        if (window.location.hash) {
-            this.handleHashRoute();
-        } else {
-            // Página por defecto si no hay hash
-            this.showPage('overview', false);
+        const path = window.location.pathname;
+        
+        // Si estamos en la página wiki
+        if (path.startsWith('/wiki')) {
+            // Verificar si hay hash
+            if (window.location.hash) {
+                this.handleHashRoute();
+            } else {
+                // Mostrar página por defecto de wiki
+                this.showPage('overview', false);
+            }
         }
+        // Si no estamos en wiki, no hacer nada (dejar que navigation.js maneje)
     },
 
     /**
@@ -499,9 +505,9 @@ const WikiLoader = {
 };
 
 // Inicializar cuando el DOM esté listo
-document.addEventListener('DOMContentLoaded', () => {
-    // Solo inicializar si no está ya inicializado
-    if (!Wiki.isInitialized) {
-        Wiki.init();
-    }
-});
+// document.addEventListener('DOMContentLoaded', () => {
+
+//  if (!Wiki.isInitialized) {
+//      Wiki.init();
+//  }
+//;

@@ -10,8 +10,13 @@ const Navigation = {
         this.setupMobileMenu();
         this.setupEventListeners();
         
-        // Mostrar página de inicio por defecto
-        this.showHome();
+        // Solo mostrar inicio si NO estamos en wiki
+        const path = window.location.pathname;
+        if (path.startsWith('/wiki')) {
+            this.showWiki(); // Mostrar sección wiki
+        } else {
+            this.showHome(); // Mostrar página de inicio por defecto
+        }
     },
 
     /**
