@@ -5,26 +5,38 @@ Sitio web oficial del Trinity Launcher, un launcher open source para Minecraft B
 ## 📁 Estructura del Proyecto
 
 ```
-trinity-launcher-website/
-│
-├── index.html                 # Página principal
-├── css/
-│   ├── styles.css            # Estilos principales
-│   └── components/           # Estilos por componentes
-│       ├── hero.css          # Sección hero
-│       ├── navigation.css    # Navegación
-│       └── wiki.css          # Documentación
-├── js/
-│   ├── main.js              # Script principal
-│   ├── modules/             # Módulos JavaScript
-│   │   ├── navigation.js    # Sistema de navegación
-│   │   ├── wiki.js         # Sistema wiki
-│   │   └── theme.js        # Gestión de temas
-│   └── config/
-│       └── tailwind.config.js # Configuración Tailwind
-├── assets/
-│   └── images/             # Imágenes locales
-└── README.md               # Este archivo
+Trinity Launcher Page
+├── assets
+│   └── images
+│       ├── mc1.png
+│       └── mc2.png
+├── css
+│   ├── components
+│   │   ├── hero.css
+│   │   ├── navigation.css
+│   │   └── wiki.css
+│   └── styles.css
+├── favicon.ico
+├── index.html
+├── js
+│   ├── configs
+│   │   └── tailwind.config.js
+│   ├── main.js
+│   └── modules
+│       ├── navigation.js
+│       ├── theme.js
+│       └── wiki.js
+├── LICENSE
+├── readme.md
+├── vercel.json
+└── wiki
+    └── pages
+        ├── faq.html
+        ├── instalacion.html
+        ├── primeros-pasos.html
+        ├── resumen.html
+        ├── solucion-problemas.html
+        └── soporte.html
 ```
 
 ##  Inicio Rápido
