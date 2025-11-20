@@ -1,54 +1,50 @@
 /* ==========================================================================
-   SISTEMA DE NAVEGACIÓN
+   SISTEMA DE NAVEGACIÓN - VERSIÓN COMPATIBLE
    ========================================================================== */
 
 const Navigation = {
     /**
-     * Inicializa el sistema de navegación
+     * MANTENER ORIGINAL - Para compatibilidad
      */
     init() {
         this.setupMobileMenu();
         this.setupEventListeners();
         
-        // Solo mostrar inicio si NO estamos en wiki
         const path = window.location.pathname;
         if (path.startsWith('/wiki')) {
-            this.showWiki(); // Mostrar sección wiki
+            this.showWiki();
         } else {
-            this.showHome(); // Mostrar página de inicio por defecto
+            this.showHome();
         }
     },
 
     /**
-     * Muestra la sección de inicio
+     * MANTENER ORIGINAL - Mostrar inicio
      */
     showHome() {
         document.getElementById('home-content').classList.remove('hidden');
         document.getElementById('wiki-content').classList.add('hidden');
-        
-        // Cerrar menús móviles si están abiertos
         this.closeMobileNavMenu();
     },
 
     /**
-     * Muestra la sección wiki
+     * MEJORADO - Pero mantiene compatibilidad
      */
     showWiki() {
         document.getElementById('home-content').classList.add('hidden');
         document.getElementById('wiki-content').classList.remove('hidden');
         
-        // Cargar contenido del wiki si no está cargado
+        // Inicializar wiki (versión original)
         Wiki.init();
         
-        // Mostrar página de resumen por defecto
+        // Mostrar página por defecto
         Wiki.showPage('overview');
         
-        // Cerrar menús móviles si están abiertos
         this.closeMobileNavMenu();
     },
 
     /**
-     * Configura el menú móvil
+     * MANTENER ORIGINAL - Setup menú móvil
      */
     setupMobileMenu() {
         const mobileMenuBtn = document.getElementById('mobile-menu-btn');
@@ -62,7 +58,7 @@ const Navigation = {
     },
 
     /**
-     * Cierra el menú de navegación móvil
+     * MANTENER ORIGINAL - Cerrar menú móvil
      */
     closeMobileNavMenu() {
         const mobileNavMenu = document.getElementById('mobile-nav-menu');
@@ -72,10 +68,9 @@ const Navigation = {
     },
 
     /**
-     * Configura event listeners globales
+     * MANTENER ORIGINAL - Event listeners
      */
     setupEventListeners() {
-        // Cerrar menú móvil al hacer click fuera
         document.addEventListener('click', (e) => {
             const mobileMenuBtn = document.getElementById('mobile-menu-btn');
             const mobileNavMenu = document.getElementById('mobile-nav-menu');
@@ -87,7 +82,6 @@ const Navigation = {
             }
         });
 
-        // Manejar tecla Escape
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
                 this.closeMobileNavMenu();

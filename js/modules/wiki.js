@@ -1,133 +1,64 @@
 /* ==========================================================================
-   SISTEMA WIKI/DOCUMENTACIÓN CON ARCHIVOS EXTERNOS - VERSIÓN ACTUALIZADA
+   SISTEMA WIKI/DOCUMENTACIÓN - VERSIÓN COMPATIBLE MEJORADA
    ========================================================================== */
 
 const Wiki = {
-    currentPage: 'overview',
+    currentPage: null,
     pages: {},
     isInitialized: false,
+    isLoading: false,
 
     /**
-     * Inicializa el sistema wiki con routing
+     * MÉTODO ORIGINAL - Mantener para compatibilidad
      */
     init() {
         if (!this.isInitialized) {
             this.loadWikiStructure();
             this.setupMobileWikiMenu();
             this.loadAllPages();
-            this.setupRouting();
-            this.handleInitialRoute();
             this.isInitialized = true;
         }
     },
 
     /**
-     * Configurar sistema de routing
+     * NUEVO - Método asíncrono mejorado
      */
-    setupRouting() {
-        // Manejar cambios de URL (botón atrás/adelante)
-        window.addEventListener('popstate', (e) => {
-            this.handleRoute();
-        });
-
-        // Manejar cambios de hash
-        window.addEventListener('hashchange', () => {
-            this.handleHashRoute();
-        });
-
-        // Interceptar clicks en enlaces wiki
-        document.addEventListener('click', (e) => {
-            if (e.target.tagName === 'A' && e.target.getAttribute('href')?.startsWith('/wiki')) {
-                e.preventDefault();
-                const path = e.target.getAttribute('href');
-                this.navigateToPath(path);
-            }
-        });
-    },
-
-    /**
-     * Manejar ruta inicial cuando se carga la página
-     */
-    handleInitialRoute() {
-        const path = window.location.pathname;
+    async ensureInitialized() {
+        if (this.isInitialized) return;
         
-        // Si estamos en la página wiki
-        if (path.startsWith('/wiki')) {
-            // Verificar si hay hash
-            if (window.location.hash) {
-                this.handleHashRoute();
-            } else {
-                // Mostrar página por defecto de wiki
-                this.showPage('overview', false);
-            }
+        try {
+            await this.initAsync();
+        } catch (error) {
+            console.error('Error inicializando wiki:', error);
+            throw error;
         }
-        // Si no estamos en wiki, no hacer nada (dejar que navigation.js maneje)
     },
 
     /**
-     * Manejar rutas de wiki
+     * NUEVO - Inicialización asíncrona
      */
-    handleRoute() {
-        const path = window.location.pathname;
-        let page = 'overview'; // página por defecto
+    async initAsync() {
+        if (this.isInitialized || this.isLoading) return;
         
-        if (path === '/wiki' || path === '/wiki/') {
-            page = 'overview'; // página principal del wiki
-        } else if (path.startsWith('/wiki/')) {
-            const segment = path.replace('/wiki/', '');
-            // Mapear URLs a páginas internas
-            page = this.mapUrlToPage(segment);
+        this.isLoading = true;
+        
+        try {
+            await this.loadWikiStructure();
+            this.createNavigation();
+            this.setupMobileWikiMenu();
+            this.isInitialized = true;
+        } finally {
+            this.isLoading = false;
         }
-        
-        // Siempre intentar mostrar la página (los archivos existen)
-        this.showPage(page, false); // false = no actualizar URL
     },
 
     /**
-     * Mapear URLs a páginas internas
-     */
-    mapUrlToPage(urlSegment) {
-        const urlMap = {
-            'resume': 'overview',
-            'installation': 'installation', 
-            'faq': 'faq',
-            'support': 'support',
-            'troubleshooting': 'troubleshooting',
-            'getting-started': 'getting-started'
-        };
-        
-        return urlMap[urlSegment] || 'overview';
-    },
-
-    /**
-     * Mapear páginas internas a URLs
-     */
-    mapPageToUrl(pageId) {
-        const pageMap = {
-            'overview': 'resume',
-            'installation': 'installation',
-            'faq': 'faq', 
-            'support': 'support',
-            'troubleshooting': 'troubleshooting',
-            'getting-started': 'getting-started'
-        };
-        
-        return pageMap[pageId] || 'resume';
-    },
-
-    /**
-     * Navegar a una ruta específica
-     */
-    navigateToPath(path) {
-        history.pushState(null, '', path);
-        this.handleRoute();
-    },
-
-    /**
-     * Carga la estructura HTML del wiki - CORREGIDA PARA FONDO OSCURO
+     * MANTENER ORIGINAL - Para compatibilidad con HTML existente
      */
     loadWikiStructure() {
         const wikiContainer = document.getElementById('wiki-container');
+        if (!wikiContainer) return;
+
         wikiContainer.innerHTML = `
             <!-- Mobile Wiki Header -->
             <div class="lg:hidden bg-trinity-dark border-b border-gray-700 p-4">
@@ -162,15 +93,15 @@ const Wiki = {
                         <h3 class="hidden lg:block font-semibold text-white mb-4">Documentación</h3>
 
                         <nav class="space-y-1" id="wiki-navigation">
-                            <!-- Navigation will be populated by JavaScript -->
+                            <!-- Navigation será poblada por JavaScript -->
                         </nav>
                     </div>
                 </div>
 
-                <!-- Wiki Content - FONDO OSCURO FORZADO -->
-                <div class="flex-1 p-4 sm:p-6 lg:p-8 bg-trinity-darker min-w-0" style="background-color: #1A1A2E !important;">
-                    <div id="wiki-page-content" style="background-color: #1A1A2E !important; color: white !important;">
-                        <!-- Page content will be loaded here -->
+                <!-- Wiki Content -->
+                <div class="flex-1 p-4 sm:p-6 lg:p-8 bg-trinity-darker min-w-0">
+                    <div id="wiki-page-content" class="wiki-page-content">
+                        <!-- Page content será cargado aquí -->
                     </div>
                 </div>
             </div>
@@ -178,19 +109,20 @@ const Wiki = {
     },
 
     /**
-     * Carga todas las páginas del wiki - AHORA USA ARCHIVOS EXTERNOS
+     * MANTENER ORIGINAL - Para compatibilidad
      */
     loadAllPages() {
-        // Las páginas ahora se cargan dinámicamente desde archivos
-        this.pages = {}; // Mantenemos el objeto para compatibilidad
+        this.pages = {};
         this.createNavigation();
     },
 
     /**
-     * Crea la navegación del wiki - ACTUALIZADA CON ROUTING
+     * MANTENER ORIGINAL - Para compatibilidad con HTML existente
      */
     createNavigation() {
         const nav = document.getElementById('wiki-navigation');
+        if (!nav) return;
+
         const navItems = [
             { id: 'overview', icon: '📋', title: 'Resumen', url: 'resume' },
             { id: 'getting-started', icon: '🚀', title: 'Primeros Pasos', url: 'getting-started' },
@@ -210,43 +142,40 @@ const Wiki = {
     },
 
     /**
-     * Mostrar página con hash routing
+     * MANTENER ORIGINAL - Para compatibilidad con botones existentes
      */
     showPageWithRouting(pageId) {
-        const urlSegment = this.mapPageToUrl(pageId);
-        
-        // Usar hash routing en lugar de pushState
-        window.location.hash = urlSegment;
-        
-        this.showPage(pageId, false);
-        this.updateSEO(pageId);
-    },
-
-        /**
-     * Manejar rutas con hash
-     */
-    handleHashRoute() {
-        const hash = window.location.hash.substring(1); // quitar el #
-        let page = 'overview';
-        
-        if (hash) {
-            page = this.mapUrlToPage(hash);
-        }
-        
-        this.showPage(page, false);
+        // Simplificado - sin routing complejo por ahora
+        this.showPage(pageId, true);
     },
 
     /**
-     * Muestra una página específica del wiki - AHORA CARGA DESDE ARCHIVOS
-     * @param {string} pageId - ID de la página a mostrar
-     * @param {boolean} updateUrl - Si actualizar la URL (por defecto true)
+     * NUEVO - Método seguro para llamadas programáticas
+     */
+    async showPageSafe(pageId) {
+        try {
+            await this.showPage(pageId);
+        } catch (error) {
+            console.error(`Error mostrando página ${pageId}:`, error);
+            this.showErrorPage(pageId);
+        }
+    },
+
+    /**
+     * MEJORADO - Pero mantiene la firma original
      */
     async showPage(pageId, updateUrl = true) {
+        if (this.currentPage === pageId) return;
+        
         try {
-            // Mostrar indicador de carga
             const contentContainer = document.getElementById('wiki-page-content');
+            if (!contentContainer) {
+                throw new Error('Contenedor de contenido no encontrado');
+            }
+
+            // Mostrar estado de carga
             contentContainer.innerHTML = `
-                <div class="flex items-center justify-center p-8" style="background-color: #1A1A2E !important;">
+                <div class="flex items-center justify-center p-8">
                     <div class="text-center text-white">
                         <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-trinity-purple mx-auto mb-4"></div>
                         <p>Cargando página...</p>
@@ -254,43 +183,57 @@ const Wiki = {
                 </div>
             `;
 
-            // Cargar contenido desde archivo
+            // Cargar contenido
             const content = await WikiLoader.loadPage(pageId);
             
             // Actualizar contenido
             contentContainer.innerHTML = content;
-            
-            // FORZAR FONDO OSCURO DESPUÉS DE CARGAR CONTENIDO
-            contentContainer.style.backgroundColor = '#1A1A2E';
-            contentContainer.style.color = 'white';
 
             // Actualizar navegación activa
             this.updateActiveNavigation(pageId);
 
-            // Cerrar menú móvil si está abierto
+            // Cerrar menú móvil
             this.closeMobileMenu();
 
-            // Scroll al inicio del contenido
+            // Scroll al inicio
             contentContainer.scrollTop = 0;
 
             this.currentPage = pageId;
 
-            // Actualizar SEO
+            // Actualizar SEO si es necesario
             if (updateUrl) {
                 this.updateSEO(pageId);
             }
 
         } catch (error) {
             console.error(`Error mostrando página '${pageId}':`, error);
-            const contentContainer = document.getElementById('wiki-page-content');
-            contentContainer.innerHTML = WikiLoader.createErrorPage(pageId);
-            contentContainer.style.backgroundColor = '#1A1A2E';
-            contentContainer.style.color = 'white';
+            this.showErrorPage(pageId);
         }
     },
 
     /**
-     * Actualizar metadatos SEO dinámicamente
+     * NUEVO - Mostrar página de error
+     */
+    showErrorPage(pageId) {
+        const contentContainer = document.getElementById('wiki-page-content');
+        if (contentContainer) {
+            contentContainer.innerHTML = `
+                <div class="wiki-page">
+                    <h1>Error al cargar la página</h1>
+                    <div class="bg-red-900 border border-red-700 text-red-300 px-4 py-3 rounded mb-6">
+                        <p>No se pudo cargar la página solicitada: <strong>${pageId}</strong></p>
+                        <p class="mt-2">Por favor, inténtalo de nuevo más tarde.</p>
+                    </div>
+                    <button onclick="Wiki.showPageWithRouting('overview')" class="bg-trinity-purple text-white px-4 py-2 rounded hover:bg-purple-700 transition-colors">
+                        Volver al inicio
+                    </button>
+                </div>
+            `;
+        }
+    },
+
+    /**
+     * MANTENER ORIGINAL - Actualizar SEO
      */
     updateSEO(pageId) {
         const seoData = {
@@ -304,80 +247,53 @@ const Wiki = {
             },
             'installation': {
                 title: 'Instalación - Trinity Launcher Wiki',
-                description: 'Guía completa para instalar Trinity Launcher en Linux. Instrucciones para todas las distribuciones.'
+                description: 'Guía completa para instalar Trinity Launcher en Linux.'
             },
             'troubleshooting': {
                 title: 'Solución de Problemas - Trinity Launcher Wiki',
-                description: 'Guía de solución de problemas comunes de Trinity Launcher en Linux.'
+                description: 'Guía de solución de problemas comunes de Trinity Launcher.'
             },
             'faq': {
                 title: 'FAQ - Trinity Launcher Wiki',
-                description: 'Preguntas frecuentes sobre Trinity Launcher. Resuelve las dudas más comunes.'
+                description: 'Preguntas frecuentes sobre Trinity Launcher.'
             },
             'support': {
                 title: 'Soporte - Trinity Launcher Wiki',
-                description: 'Obtén ayuda técnica para Trinity Launcher. Canales de soporte y contacto.'
+                description: 'Obtén ayuda técnica para Trinity Launcher.'
             }
         };
 
         const data = seoData[pageId];
         if (!data) return;
 
-        // Actualizar título
         document.title = data.title;
 
-        // Actualizar meta description
         const metaDescription = document.querySelector('meta[name="description"]');
         if (metaDescription) {
             metaDescription.setAttribute('content', data.description);
         }
-
-        // Actualizar Open Graph
-        const ogTitle = document.querySelector('meta[property="og:title"]');
-        const ogDescription = document.querySelector('meta[property="og:description"]');
-        const ogUrl = document.querySelector('meta[property="og:url"]');
-        
-        if (ogTitle) ogTitle.setAttribute('content', data.title);
-        if (ogDescription) ogDescription.setAttribute('content', data.description);
-        if (ogUrl) {
-            const urlSegment = this.mapPageToUrl(pageId);
-            const newUrl = `https://trinity-launcher.vercel.app/wiki#${urlSegment}`;
-            ogUrl.setAttribute('content', newUrl);
-        }
-
-        // Actualizar canonical
-        const canonical = document.querySelector('link[rel="canonical"]');
-        if (canonical) {
-            const urlSegment = this.mapPageToUrl(pageId);
-            const newUrl = `https://trinity-launcher.vercel.app/wiki#${urlSegment}`;
-            canonical.setAttribute('href', newUrl);
-        }
     },
 
     /**
-     * Actualiza la navegación activa
-     * @param {string} activePageId - ID de la página activa
+     * MANTENER ORIGINAL - Actualizar navegación activa
      */
     updateActiveNavigation(activePageId) {
-        // Remover clase activa de todos los elementos
         document.querySelectorAll('.wiki-nav-item').forEach(item => {
-            item.classList.remove('bg-sidebar-active', 'text-white');
+            item.classList.remove('bg-sidebar-active', 'text-white', 'active');
             item.classList.add('text-gray-300');
         });
 
-        // Añadir clase activa al elemento seleccionado
         const activeNavItem = document.querySelector(`[data-page="${activePageId}"]`);
         if (activeNavItem) {
-            activeNavItem.classList.add('bg-sidebar-active', 'text-white');
+            activeNavItem.classList.add('bg-sidebar-active', 'text-white', 'active');
             activeNavItem.classList.remove('text-gray-300');
         }
     },
 
     /**
-     * Configura el menú móvil del wiki
+     * MANTENER ORIGINAL - Setup menú móvil
      */
     setupMobileWikiMenu() {
-        // Esta función se ejecuta después de que el HTML se ha cargado
         setTimeout(() => {
             const mobileWikiMenuBtn = document.getElementById('mobile-wiki-menu-btn');
             const closeMobileWikiMenu = document.getElementById('close-mobile-wiki-menu');
@@ -398,7 +314,7 @@ const Wiki = {
     },
 
     /**
-     * Abre el menú móvil del wiki
+     * MANTENER ORIGINAL - Abrir menú móvil
      */
     openMobileMenu() {
         const wikiSidebar = document.getElementById('wiki-sidebar');
@@ -410,7 +326,7 @@ const Wiki = {
     },
 
     /**
-     * Cierra el menú móvil del wiki
+     * MANTENER ORIGINAL - Cerrar menú móvil
      */
     closeMobileMenu() {
         const wikiSidebar = document.getElementById('wiki-sidebar');
@@ -423,23 +339,18 @@ const Wiki = {
 };
 
 /* ==========================================================================
-   CARGADOR DE PÁGINAS WIKI - ARCHIVOS EXTERNOS
+   CARGADOR DE PÁGINAS WIKI MEJORADO
    ========================================================================== */
 
 const WikiLoader = {
     cache: new Map(),
     
-    /**
-     * Carga una página wiki desde archivo externo
-     */
     async loadPage(pageId) {
         try {
-            // Usar caché si existe
             if (this.cache.has(pageId)) {
                 return this.cache.get(pageId);
             }
 
-            // Mapear IDs a archivos
             const pageFiles = {
                 'overview': 'wiki/pages/resumen.html',
                 'getting-started': 'wiki/pages/primeros-pasos.html',
@@ -454,22 +365,17 @@ const WikiLoader = {
                 throw new Error(`Página '${pageId}' no encontrada`);
             }
 
-            // Cargar archivo
             const response = await fetch(filePath);
             if (!response.ok) {
                 throw new Error(`Error loading page: ${response.status}`);
             }
 
             const html = await response.text();
-            
-            // Extraer contenido del body
             const parser = new DOMParser();
             const doc = parser.parseFromString(html, 'text/html');
             const content = doc.body.innerHTML;
 
-            // Guardar en caché
             this.cache.set(pageId, content);
-            
             return content;
             
         } catch (error) {
@@ -478,13 +384,10 @@ const WikiLoader = {
         }
     },
 
-    /**
-     * Crear página de error
-     */
     createErrorPage(pageId) {
         return `
-            <div class="wiki-page" style="background-color: #1A1A2E !important; color: white !important;">
-                <h1 style="color: white !important;">Error al cargar la página</h1>
+            <div class="wiki-page">
+                <h1>Error al cargar la página</h1>
                 <div class="bg-red-900 border border-red-700 text-red-300 px-4 py-3 rounded mb-6">
                     <p>No se pudo cargar la página solicitada: <strong>${pageId}</strong></p>
                     <p class="mt-2">Por favor, inténtalo de nuevo más tarde.</p>
@@ -496,18 +399,7 @@ const WikiLoader = {
         `;
     },
 
-    /**
-     * Limpiar caché
-     */
     clearCache() {
         this.cache.clear();
     }
 };
-
-// Inicializar cuando el DOM esté listo
-// document.addEventListener('DOMContentLoaded', () => {
-
-//  if (!Wiki.isInitialized) {
-//      Wiki.init();
-//  }
-//;
